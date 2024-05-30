@@ -117,8 +117,14 @@ Device Secret: G8F5XFL7SGTL8JN
 Serial Number: ARNHAD2142DVAKL
 ```
 
-**ZADZIAŁAŁO:**
 
+
+[claiming guide](https://diotlabs.daraghbyrne.me/docs/getting-started/4-claim-it/) 
+
+
+### Trzeci status
+
+**CO ZADZIAŁAŁO:**
 * SDK: wystarczy dodatek `Particle Workbench` dla `VSCode`
 * factory reset
 * `particle setup`
@@ -126,12 +132,7 @@ Serial Number: ARNHAD2142DVAKL
 * `Particle: Cloud flash`
 * `Particle: Flash device for debug` 
 * `particle list`
-
-[claiming guide](https://diotlabs.daraghbyrne.me/docs/getting-started/4-claim-it/) 
-
-
-### Trzeci status
-
+ 
 Udało się przeflashować basic program testowy migający D7 i dający output
 po serialu. W takim razie - można zacząć pracę nad
 
