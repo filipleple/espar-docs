@@ -119,6 +119,7 @@ Serial Number: ARNHAD2142DVAKL
 
 **ZADZIAŁAŁO:**
 
+* SDK: wystarczy dodatek `Particle Workbench` dla `VSCode`
 * factory reset
 * `particle setup`
 * `particle serial --wifi`
