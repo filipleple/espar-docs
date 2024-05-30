@@ -1,3 +1,9 @@
 [submodule "codebase/espar"]
 	path = codebase/espar
 	url = https://github.com/filipleple/espar
+[submodule "codebase/argon"]
+	path = codebase/argon
+	url = https://github.com/filipleple/pg-argon
+[submodule "codebase/dongle"]
+	path = codebase/dongle
+	url = https://github.com/filipleple/nrf52-dongle

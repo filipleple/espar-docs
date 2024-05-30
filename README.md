@@ -166,6 +166,10 @@ Trzeba ogarnąć jak go flashować bez DeviceOS'a
 * po USB pojawia się jako serial i jako urządzenie blokowe (bootloader), więc
     tak też można wrzucać hexy 
 
+### Ważne
+
+* [tutorial flashowania](https://devzone.nordicsemi.com/guides/short-range-guides/b/getting-started/posts/nrf52840-dongle-programming-tutorial) 
+
 
 ## Pytania
 
