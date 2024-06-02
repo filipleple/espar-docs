@@ -17,6 +17,29 @@
 1. Antena ESPAR
 
 
+## Podłączenie TUTORIAL
+
+* nordic DK - MCP
+    - scl : P0.27
+    - sda : P0.26
+
+* Argon - nordic DK
+    - D9 : P0.08
+    - D10 : P0.06
+
+* dongle jest samowystarczalny
+
+Po spięciu powyższych wystarczy zasilić każde urządzenie po USB. 
+
+### Demonstracja:
+
+* Umieścić dongle w określonej pozycji względem reszty
+* Poczekać, aż skanowanie zatoczy cały okrąg na antenie
+* Antena powinna przeskoczyć do pozycji w kierunku dongla
+* Przenieść dongle na drugą stronę
+* Zaobserwować, jak antena skanuje ponownie i znajduje nową pozycję 
+
+
 ## Założenia w skrócie
 
 * Nadajemy sygnał przez dongle
@@ -41,11 +64,14 @@
     - i tak muszą być razem przy antenie, więc chyba można je spiąć po serialu
       co byłoby najłatwiejsze 
  
+--- 
 
 ## ESPAR, nRF52-DK
 
 * programowany przez VSCode i nRFConnect
 * zephyrRTOS
+
+![](espar.png) 
 
 ### Status
 
@@ -62,6 +88,32 @@ dla najlepszego sygnału
 * ew. dalej pobiera dane z Argona i patrzy, czy poziom sygnału nie zmienia się;
     w wypadku zmiany poniżej X% ponownie przechodzi do skanowania 
 
+**Pytanie:** Czy trzeba "słuchać" seriala po uarcie w osobnym wątku?
+
+* raczej **nie**, powinno to działać na zasadzie: 
+    - ustawiamy direktory w pozycję
+    - czekamy aż argon wykona skan
+    - w momencie odebrania sygnału na UART idziemy do kolejnej pozycji
+        czyli właściwie uart event zamiast sleepów
+
+### Drugi status
+
+Obecnie obracanie ESPARa jest "taktowane" komunikatami z Argona. Po odebraniu 
+wiadomości, rotuje do kolejnej pozycji.
+
+**Założenie:** chcemy na nrf52-DK realizować jedynie API do rotacji, np 
+* nasłuch po serialu komend `rotate X` (gdzie X to środkowy 
+    direktor) i `hold`.
+* ew. odpowiedź w postaci `current pos: X` (znowu X - direktor)
+
+Skanowaniem, monitorowaniem poziomu sygnału, decyzją o rotowaniu lub przyjęciu
+określonej pozycji będzie zajmował się argon.
+
+### Obecny status
+
+ESPAR API to komendy rotate X i hold, obecnie nie zwraca żadnych odpowiedzi.
+
+---
 
 ## Particle Argon
 
@@ -75,37 +127,6 @@ Praktycznie:
 Argon po USB świecił na stały kolor, co wskazywało na problem z wgranym kodem. 
 Nie wykrywał się nigdzie w Linuksie ani Windowsie, tym bardziej w aplikacjach
 webowych particle.io.
-
-### Drugi status
-
-Po przewaleniu połowy internetu, udało się trafić na stockowy firmware na 
-oficjalnej stronie, oraz na komendę na zapyziałym forum do "ręcznego" wgrywania
-hexów, korzystając z J-Linka w NRF52-DK po połączeniu tasiemką:
-
-```
- nrfjprog -f NRF52 --program argon.hex --chiperase --reset
-```
-
-Od tego momentu Argon miga na spodziewany kolor, wykrywa się w systemach jako
-urządzenie blokowe ("jakby pendrive") i wykrywa się też w webowej aplikacji 
-do programowania. Aplikacja jest w stanie się z nim komunikować, zmieniać mu 
-stan (kolor diody). 
-
-Problem w tym, że na którymś etapie zestawiania w tej 
-aplikacji "traci połączenie" i każe zaczynać od początku. Skoro np. aplikacja 
-na Androida przestała działać i wycofali ją ze sklepu, to pewnie nie są 
-najlepsi w te klocki i webowa aplikacja też się po prostu popsuła.
-
-Trzeba będzie go więc ręcznie programować przez w/w komendę, podpiętego do 
-NRF52-DK. Tak też chyba robili to ci technicy z PG. Do tego potrzeba będzie 
-znaleźć dla niego konkretny toolchain/SDK.
-
-**Zadania**
-
-* poczytaj o samym argonie, jaki mikrokontroler tam siedzi, co to za 
-    architektura
-* poszukaj albo "particle argon toolchain/SDK" albo toolchain/SDK dla 
-    technicznej nazwy uc jaki tam siedzi - być może to jakiś nordic soc
 
 ### Ważne
 
@@ -160,6 +181,69 @@ Udało się odpalić podstawowy kod na skanowanie BLE:
  
 Trzeba ogarnąć jak go flashować bez DeviceOS'a 
 
+### Piąty status
+
+Co chcemy mieć? 
+
+tryby
+
+* skanowanie 
+    - zacznij od 1 direktora, obracaj się aż wrócisz do pierwszego direktora
+        * rotate 1
+        * rotate next (...)
+    - dla każdej pozycji zapisuj w tablicy najlepszą moc sygnału 
+    - ( potem filtracja po nazwie ) 
+
+* utrzymanie pozycji i monitorowanie poziomu sygnału
+    - po skanowaniu wybierz najlepszą pozycję i wróć do niej
+
+ważne: synchronizuj się cały czas z argonem, żeby sprawdzić czy pozycje są 
+zgodne 
+
+
+**Zsynchronizowane algorytmy**
+
+**Argon**
+
+* Setup
+    - ustaw się na 1 direktor, ustaw ESPAR na 1 direktor, zaczekaj na 
+    potwierdzenie
+
+* Loop
+    - SCAN
+        - każ esparowi ustawić się na CURR_POS
+        - odbierz potwierdzenie, że jest na CURR_POS
+
+        - skanuj po BT
+        - wybierz najlepszy sygnał
+        - przypisz do listy sygnałów
+
+        - jeśli <12, zwiększ CURR_POS
+        - jeśli nie, przejdź do wyboru i HOLD
+    - HOLD
+
+
+**ESPAR**
+
+* Inicjalizacja
+
+
+* Loop - serial event
+    - rotate x:
+        - pobierz x
+        - rotuj, aż nie x
+        - napisz, że CURR_POS = x
+
+    - hold:
+
+
+### Obecny status
+
+Argon wysyła `rotate X` lub `hold`. Znajduje najlepsze położenie i przechodzi do monitorowania poziomu.
+W razie nagłego spadku poziomu sygnału o zadaną wartość, skanuje ponownie.
+
+---
+
 ## nRF52840 Dongle
 
 * można programować z nRFConnect w VSCode, po podpięciu tasiemką do DK
@@ -168,12 +252,23 @@ Trzeba ogarnąć jak go flashować bez DeviceOS'a
 * jednak najbardziej niezawodny **J-Link** w nrf52-DK - automatycznie się 
   przełącza po podpięciu
 
+### Status
+
+Udało się odpalić advertising na donglu przez modyfikację przykładowej 
+aplikacji LLPM. Dzięki temu argon go wykrywa podczas skanowania anteną i podaje
+poziom sygnału. 
+
+Można teraz zbadać, jak mocno zmienia się poziom sygnału w zależności od 
+ułożenia direktorów.
+
+Opcjonalna modyfikacja to byłoby ustawienie konkretnego ID i szukanie go 
+Argonem, żeby wykluczyć niezwiązane urządzenia - TBD czy wchodzi w zakres
+projektu
+
+
 ### Ważne
 
 * [tutorial flashowania](https://devzone.nordicsemi.com/guides/short-range-guides/b/getting-started/posts/nrf52840-dongle-programming-tutorial) 
 
-
-## Pytania
-
-* Jak chcemy realizować połączenie między argonem a nordiciem - serial?
+---
 
