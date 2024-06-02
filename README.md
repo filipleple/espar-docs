@@ -165,6 +165,8 @@ Trzeba ogarnąć jak go flashować bez DeviceOS'a
 * można programować z nRFConnect w VSCode, po podpięciu tasiemką do DK
 * po USB pojawia się jako serial i jako urządzenie blokowe (bootloader), więc
     tak też można wrzucać hexy 
+* jednak najbardziej niezawodny **J-Link** w nrf52-DK - automatycznie się 
+  przełącza po podpięciu
 
 ### Ważne
 
