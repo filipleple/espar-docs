@@ -73,6 +73,12 @@ Po spięciu powyższych wystarczy zasilić każde urządzenie po USB.
 
 ![](espar.png) 
 
+![](espar_gr.png) 
+
+![](scope.jpg) 
+
+![](komora.jpg) 
+
 ### Status
 
 Rotowanie pięcioma direktorami działa, możnaby ew. uporządkować kod i 
